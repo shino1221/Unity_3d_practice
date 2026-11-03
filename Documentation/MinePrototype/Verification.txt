@@ -1,0 +1,48 @@
+Unity Play Mode: Rigidbody movement, input and inventory verification
+Allocation probes: 32 warmup calls, then 1000 synchronous idle calls per method.
+Measures managed allocations on the current thread; excludes engine-wide work and interaction setup.
+
+PASS Scene uses Rigidbody and CapsuleCollider without CharacterController
+PASS Single player uses the shared input action asset
+PASS Stable ground contact and gravity
+PASS Singleton and upright capsule configuration
+PASS W movement retains walk speed
+PASS Diagonal movement stays normalized
+PASS Shift sprint retains speed
+PASS Movement stops without drift
+PASS Mouse sensitivity stays 100 pixels = 9 degrees with Rigidbody yaw
+PASS Space invokes native Jump event
+PASS No second jump in the air
+PASS Jump height and landing
+PASS C lowers capsule and camera while keeping feet in place
+PASS Crouching does not shift the feet
+PASS Crouch speed takes precedence over sprint
+PASS Releasing C cannot stand through a low ceiling
+PASS Automatically stands after head clearance is restored
+PASS Capsule collides with walls without passing through
+PASS Flashlight pickup
+PASS Right click toggles selected flashlight
+PASS F no longer toggles flashlight
+PASS Exactly three basic slots
+PASS Exactly one equipped backpack
+PASS Fill backpack slot 1
+PASS Fill backpack slot 2
+PASS Fill backpack slot 3
+PASS Fill backpack slot 4
+PASS Fill backpack slot 5
+PASS Backpack adds exactly five slots
+PASS Mouse wheel wraps selection across exactly three pockets
+PASS Reverse wheel restores selection
+PASS Inventory swap remains intact
+PASS Open inventory blocks movement and jump and frees cursor
+PASS Q hold hides item and holds backpack [action=Performed, key=True, cursor=Locked]
+PASS Right click cancels backpack hold without toggling flashlight
+PASS Cancel suppression also works if the use callback runs after cancel
+PASS Next right click resumes normal flashlight use
+PASS Q release throws backpack with all contents preserved
+PASS Backpack re-pickup preserves exact item references
+PASS X throws held item
+PASS Inventory HUD retains all eight slots
+PASS Player.Update 1000 calls: 0 bytes managed allocations
+PASS InventoryUI.Refresh 1000 calls: 0 bytes managed allocations
+PASS Player.FixedUpdate 1000 calls: 0 bytes managed allocations

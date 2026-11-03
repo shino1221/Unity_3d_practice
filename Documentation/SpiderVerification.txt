@@ -1,0 +1,1 @@
+PASS: 330 simulation frames; four IK chains; flat ground, ramp and stopping. Max foot error=9.024773E-05; moving frames=70

@@ -1,0 +1,13 @@
+Low Poly Fantasy Crystal / Cave Pack
+- 제작자: Cenji
+- 사이트: itch.io
+- 링크: https://cenjiyt.itch.io/low-poly-fantasy-crystal-pack?utm_source=chatgpt.com
+- 구성: 수정 결정체, 보석, 동굴 암석 등 총 57개 모델
+- 파일 형식: FBX, GLB
+
+Folding Table
+- 제작자: AK STUDIO
+- 사이트: Sketchfab
+- 링크: https://sketchfab.com/3d-models/folding-table-dba1b4270fee431290c464742f5fd4f5
+- 구성: 접이식 테이블 3D 모델
+- 파일 형식: DAE, USDZ, GLTF, GLB

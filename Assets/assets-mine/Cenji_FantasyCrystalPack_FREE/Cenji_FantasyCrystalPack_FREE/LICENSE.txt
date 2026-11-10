@@ -1,0 +1,26 @@
+CENJI ASSET LICENSE
+
+Personal and commercial use is allowed.
+
+You may:
+
+- Use these assets in free games and projects.
+- Use these assets in commercial games and projects.
+- Modify the models and materials for use in your own projects.
+- Use the assets in Unity, Unreal Engine, Godot, Blender, VR projects, web projects, and other game engines or 3D software.
+- Use the assets in client work and commercial applications.
+
+Attribution is appreciated, but not required.
+
+You may NOT:
+
+- Resell the raw assets.
+- Redistribute the raw assets.
+- Repackage the assets as another asset pack.
+- Upload the original assets to another marketplace or asset website.
+- Upload modified versions as a standalone or competing asset pack.
+- Give away the raw files as part of another downloadable asset collection.
+
+The assets may be distributed as part of a finished game, application, rendered project, or other completed creative work.
+
+Created by Cenji.

@@ -1,64 +1,64 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace MinePrototype
 {
     public class Backpack : Item
     {
-        [field: SerializeField, HideInInspector] public Item[] Items { get; private set; } = new Item[5]; // 배낭 내부 5칸
-        [field: SerializeField] public Transform Storage { get; private set; } // 배낭 아이템을 비활성 상태로 보관할 자식 Transform
-        [SerializeField] private InputActionReference dropAction, cancelAction; // dropAction: Q 길게 누르기·놓기, cancelAction: 우클릭 취소 액션 참조
-      
-      
-        private Inventory Inventory => Player.Instance.Inventory; // 단일 플레이어의 인벤토리 참조
-        private InputAction drop, cancel; // drop: 구독 중인 Q 액션, cancel: 구독 중인 취소 액션, 미장착 시 둘 다 null
-      
-      
-        private bool restoreMouse; // 배낭 들기 전 마우스 조작 모드였는지, 취소 시 커서 복원에 사용
+        [field: SerializeField, HideInInspector] public Item[] Items { get; private set; } = new Item[5];
+        [field: SerializeField] public Transform Storage { get; private set; }
+        private bool bound, restoreMouse, attemptedHold;
+        private float heldSeconds;
+        private Inventory Inventory => Player.Instance.Inventory;
 
-
-
+        // 장착 중인 배낭만 Q 입력을 처리합니다. Input Action 구독과 GetKey를 중복 사용하지 않습니다.
         public void Bind(bool equipped)
         {
-            // 같은 장착 상태에서는 입력을 중복 구독하거나 해제하지 않는다.
-            if (equipped == (drop != null)) return;
-            if (equipped)
-            {
-                drop = dropAction.action;
-                cancel = cancelAction.action;
-
-                drop.performed += BeginThrow;
-                drop.canceled += ReleaseThrow;
-
-                cancel.performed += CancelThrow;
-            }
-            else
-            {
-                drop.performed -= BeginThrow;
-                drop.canceled -= ReleaseThrow;
-
-                cancel.performed -= CancelThrow;
-
-                drop = cancel = null;
-            }
+            bound = equipped;
+            heldSeconds = 0;
+            attemptedHold = false;
         }
 
-        private void BeginThrow(InputAction.CallbackContext input)
+        void Update() => AdvanceThrowInput(Input.GetKey(KeyCode.Q), Input.GetKeyUp(KeyCode.Q),
+            Input.GetKeyDown(KeyCode.Mouse1), Time.deltaTime);
+
+        // Q 2초 유지 → 앞으로 들기 → Q 해제 시 버리기. 우클릭 취소 후에는 Q를 다시 눌러야 합니다.
+        public void AdvanceThrowInput(bool held, bool released, bool cancel, float seconds)
         {
-            bool mouseWasFree = !Player.Instance.WorldControls; // 배낭을 들기 직전 마우스 조작 모드였는지
+            if (seconds < 0 || float.IsNaN(seconds) || float.IsInfinity(seconds))
+                throw new ArgumentOutOfRangeException(nameof(seconds));
+            if (!bound || Player.Instance == null) return;
+            if (!Player.Instance.CanManageInventory || cancel)
+            {
+                CancelThrow();
+                heldSeconds = 0;
+                attemptedHold = held;
+                return;
+            }
+            if (!held)
+            {
+                if (released && Inventory.HoldingBag)
+                    Player.Instance.CaptureCursor(Inventory.DropBag() || !restoreMouse);
+                heldSeconds = 0;
+                attemptedHold = false;
+                return;
+            }
+            if (attemptedHold) return;
+            heldSeconds += seconds;
+            if (heldSeconds < 2) return;
+            attemptedHold = true;
+            bool mouseWasFree = !Player.Instance.WorldControls;
             if (!Inventory.BeginBagHold()) return;
             restoreMouse = mouseWasFree;
             Player.Instance.CaptureCursor(true);
         }
 
-        private void ReleaseThrow(InputAction.CallbackContext input)
+        public void CancelThrow()
         {
-            if (Inventory.HoldingBag) Player.Instance.CaptureCursor(Inventory.DropBag() || !restoreMouse);
-        }
-
-        private void CancelThrow(InputAction.CallbackContext input)
-        {
-            if (!Inventory.HoldingBag) return;
+            // 다른 창으로 전환해 Update가 멈춰도 이전 Q 홀드가 복귀 후 이어지지 않게 합니다.
+            heldSeconds = 0;
+            attemptedHold = true;
+            if (Player.Instance == null || !Inventory.HoldingBag) return;
             Inventory.CancelBagHold();
             Player.Instance.CaptureCursor(!restoreMouse);
         }

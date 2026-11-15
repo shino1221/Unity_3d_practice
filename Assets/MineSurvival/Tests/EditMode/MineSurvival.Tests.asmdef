@@ -1,0 +1,6 @@
+{
+  "name": "MineSurvival.Tests",
+  "references": ["MineSurvival"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

@@ -1,0 +1,5 @@
+{
+  "name": "MinePrototype.Editor",
+  "references": ["MinePrototype.Runtime", "MineSurvival", "Unity.InputSystem", "Unity.TextMeshPro"],
+  "includePlatforms": ["Editor"]
+}

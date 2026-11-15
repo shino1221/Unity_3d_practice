@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.InputSystem;
 
 namespace MinePrototype
 {
@@ -44,9 +43,14 @@ namespace MinePrototype
             if (!focused && source >= 0) EndDrag();
         }
 
-        public void OnMouseMode(InputAction.CallbackContext input)
+        private void Update()
         {
-            if (!input.performed || inventory.HoldingBag || inventory.Dragging) return;
+            if (Player.Instance == null || !Player.Instance.CanManageInventory)
+            {
+                if (source >= 0) EndDrag();
+                return;
+            }
+            if (!Input.GetKeyDown(KeyCode.LeftAlt) || inventory.HoldingBag || inventory.Dragging) return;
             if (inventory.IsOpen) inventory.ToggleOpen();
             else Player.Instance.CaptureCursor(!Player.Instance.WorldControls);
         }
@@ -81,7 +85,7 @@ namespace MinePrototype
         
         public void OnBeginDrag(PointerEventData data)
         {
-            if (inventory.HoldingBag || Cursor.lockState == CursorLockMode.Locked) return;
+            if (Player.Instance == null || !Player.Instance.CanManageInventory || inventory.HoldingBag || Cursor.lockState == CursorLockMode.Locked) return;
             int slot = SlotAt(data.position); // 드래그를 시작한 화면 위치의 슬롯 번호, 슬롯 밖이면 -1
             Item item = inventory.At(slot); // 마우스로 끌어 표시할 아이템, 빈 칸이면 null
 

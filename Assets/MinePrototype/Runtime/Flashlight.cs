@@ -1,28 +1,27 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace MinePrototype
 {
     public class Flashlight : Item
     {
-        [SerializeField] private InputActionReference useAction; // 손전등 전원을 전환하는 입력 액션
-        [SerializeField] private Light beam; // 우클릭으로 켜고 끌 손전등 조명 컴포넌트
-        private InputAction subscribedAction; // 장착 중 구독한 입력 액션, 미장착 시 null
+        [SerializeField] private Light beam;
+        private bool equipped;
+        public bool IsOn => beam != null && beam.enabled;
 
-        public override void SetEquipped(bool equipped)
+        public override void SetEquipped(bool value) => equipped = value;
+        void Update()
         {
-            InputAction action = equipped ? useAction != null ? useAction.action : null : null; // 장착 시 구독할 액션, 해제 시 null
-            if (subscribedAction == action) return;
-
-            if (subscribedAction != null) subscribedAction.performed -= ToggleBeam;
-            subscribedAction = action;
-            if (subscribedAction != null) subscribedAction.performed += ToggleBeam;
+            if (Input.GetKeyDown(KeyCode.Mouse1)) TryToggle();
         }
 
-        private void ToggleBeam(InputAction.CallbackContext input)
+        // 가방 취소와 같은 우클릭으로 전원까지 바뀌지 않도록 인벤토리의 취소 프레임도 확인합니다.
+        public bool TryToggle()
         {
-            if (Player.Instance != null && Player.Instance.Inventory.CanUse)
-                beam.enabled = !beam.enabled;
+            var player = Player.Instance;
+            if (!equipped || beam == null || player == null || !player.Inventory.CanUse ||
+                !player.Controls.CanToggleFlashlight) return false;
+            beam.enabled = !beam.enabled;
+            return true;
         }
     }
 }

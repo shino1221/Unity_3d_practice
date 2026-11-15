@@ -1,0 +1,5 @@
+{
+  "name": "MineSurvival.PlayTests",
+  "references": ["MineSurvival"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

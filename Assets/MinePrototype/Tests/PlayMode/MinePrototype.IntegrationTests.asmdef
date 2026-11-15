@@ -1,0 +1,5 @@
+{
+  "name": "MinePrototype.IntegrationTests",
+  "references": ["MinePrototype.Runtime", "MineSurvival", "Unity.InputSystem"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

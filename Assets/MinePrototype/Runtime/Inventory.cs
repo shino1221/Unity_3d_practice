@@ -11,7 +11,9 @@ namespace MinePrototype
         // hand: 손 위치, storage: 미선택 소지품 위치, wornBag: 착용 배낭 위치, heldBag: 던지기 전 배낭 위치, view: 카메라 위치
         [SerializeField] private float throwDistance = 1.1f; // 아이템 버릴 때 카메라 앞 위치
         [SerializeField] private float throwSpeed = 2.5f; // 던지는 속도
-        [SerializeField] private float pickupDistance = 2.8f; // pickup 가능 거리
+        [SerializeField] private float pickupDistance = 2.5f; // 회의에서 정한 공통 획득 거리
+        private float dropHeld;
+        private int dropSlot = -1;
 
 
         public Backpack Backpack => backpack; // inventoryui 에서 getter로 참조
@@ -63,23 +65,45 @@ namespace MinePrototype
         }
 
 
-        public void OnPickUp(InputAction.CallbackContext input)
+        private void Update()
         {
-            if (!input.started || !CanAct) return;
-            Add(target);
-            ClearTarget();
-        }
-
-        public void OnSelect(InputAction.CallbackContext input)
-        {
-            if (!input.performed || !CanAct) return;
-            float wheel = input.ReadValue<float>(); // 마우스 휠 회전량, 양수는 이전 칸·음수는 다음 칸
+            if (!CanAct)
+            {
+                ClearTarget();
+                AdvanceDropHold(false, Time.deltaTime);
+                return;
+            }
+            UpdateTarget();
+            if (Input.GetKeyDown(KeyCode.F)) TryPickUpTarget();
+            float wheel = Mouse.current == null ? 0 : Mouse.current.scroll.ReadValue().y;
             if (wheel != 0) Select(wheel > 0 ? -1 : 1);
+            AdvanceDropHold(Input.GetKey(KeyCode.X), Time.deltaTime);
         }
 
-        public void OnDrop(InputAction.CallbackContext input)
+        public bool TryPickUpTarget()
         {
-            if (input.performed && CanAct) Drop(Selected);
+            if (!CanAct) return false;
+            UpdateTarget();
+            bool added = Add(target);
+            ClearTarget();
+            return added;
+        }
+
+        // X는 2초 동안 유지해야 한 번만 버립니다. 도중 슬롯 전환/잠금은 진행을 취소합니다.
+        public void AdvanceDropHold(bool held, float seconds)
+        {
+            if (seconds < 0 || float.IsNaN(seconds) || float.IsInfinity(seconds))
+                throw new ArgumentOutOfRangeException(nameof(seconds));
+            if (!held || !CanAct)
+            {
+                dropHeld = 0;
+                dropSlot = Selected;
+                return;
+            }
+            if (dropSlot != Selected) { dropHeld = 0; dropSlot = Selected; }
+            float before = dropHeld;
+            dropHeld += seconds;
+            if (before < 2 && dropHeld >= 2) Drop(dropSlot);
         }
 
         public void UpdateTarget()
@@ -99,7 +123,7 @@ namespace MinePrototype
             if (target != null) target.Highlight(true);
         }
 
-        private bool Valid(int slot) => slot >= 0 && slot < (backpack == null ? 3 : 8);
+        private bool Valid(int slot) => slot >= 0 && slot < 3 + (backpack == null ? 0 : backpack.Items.Length);
         public Item At(int slot) => !Valid(slot) ? null : slot < 3 ? pockets[slot] : backpack.Items[slot - 3];
         private void Put(int slot, Item item)
         {
@@ -139,7 +163,7 @@ namespace MinePrototype
 
         public void Select(int direction)
         {
-            if (HoldingBag || Dragging) return;
+            if (HoldingBag || Dragging || Player.Instance == null || !Player.Instance.CanManageInventory) return;
             int previous = Selected; // 선택을 바꾸기 전 기본 소지 칸 번호
             Selected = (Selected + direction + 3) % 3;
             UpdateSlot(previous);
@@ -147,19 +171,15 @@ namespace MinePrototype
             Changed?.Invoke();
         }
 
-        public void OnToggleInventory(InputAction.CallbackContext input)
-        {
-            if (input.performed) ToggleOpen();
-        }
-
         public void ToggleOpen()
         {
-            if (backpack == null || HoldingBag || Dragging) return;
+            if (backpack == null || HoldingBag || Dragging || Player.Instance == null || !Player.Instance.CanManageInventory) return;
             IsOpen = !IsOpen;
             Changed?.Invoke();
         }
 
-        public bool CanMove(int from, int to) => !HoldingBag && Valid(to) && from != to && At(from) != null;
+        public bool CanMove(int from, int to) => Player.Instance != null && Player.Instance.CanManageInventory &&
+            !HoldingBag && Valid(to) && from != to && At(from) != null;
         public bool Move(int from, int to)
         {
             if (!CanMove(from, to)) return false;
@@ -192,7 +212,7 @@ namespace MinePrototype
         public bool Drop(int slot)
         {
             Item item = At(slot); // 이 슬롯에서 꺼내 던질 아이템
-            if (HoldingBag || !CanDrop(item)) return false;
+            if (HoldingBag || Player.Instance == null || !Player.Instance.CanManageInventory || !CanDrop(item)) return false;
             Put(slot, null);
             item.SetEquipped(false);
             item.Drop(view, throwDistance, throwSpeed);
@@ -202,7 +222,7 @@ namespace MinePrototype
 
         public bool BeginBagHold()
         {
-            if (backpack == null || HoldingBag || Dragging) return false;
+            if (backpack == null || HoldingBag || Dragging || Player.Instance == null || !Player.Instance.CanManageInventory) return false;
             wasOpen = IsOpen;
             IsOpen = false;
             HoldingBag = true;

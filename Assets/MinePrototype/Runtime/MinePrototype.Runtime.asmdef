@@ -1,5 +1,5 @@
 {
     "name": "MinePrototype.Runtime",
     "rootNamespace": "MinePrototype",
-    "references": ["Unity.InputSystem", "UnityEngine.UI"]
+    "references": ["MineSurvival", "Unity.InputSystem", "UnityEngine.UI"]
 }

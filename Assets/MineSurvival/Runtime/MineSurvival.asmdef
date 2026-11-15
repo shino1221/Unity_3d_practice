@@ -1,0 +1,5 @@
+{
+  "name": "MineSurvival",
+  "rootNamespace": "MineSurvival",
+  "references": ["Unity.InputSystem", "UnityEngine.UI"]
+}

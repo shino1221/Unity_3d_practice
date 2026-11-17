@@ -12,6 +12,7 @@ namespace MinePrototype
         public Inventory Inventory { get; private set; }
         public CapsulePlayerInput Controls { get; private set; }
         public CapsuleMovement Movement { get; private set; }
+        internal Camera ViewCamera { get; private set; } // 곡괭이 타격 기준이 되는 1인칭 카메라
         public PlayerStamina Stamina => Movement.Stamina;
         public bool WorldControls => Controls.GameplayInputEnabled && Controls.CanUseTools;
         public bool CanManageInventory => Controls.HasFocus && !Controls.MenuOpen && !Controls.ActionInProgress && !Stamina.IsDead;
@@ -21,6 +22,7 @@ namespace MinePrototype
             Inventory = GetComponent<Inventory>();
             Controls = GetComponent<CapsulePlayerInput>();
             Movement = GetComponent<CapsuleMovement>();
+            ViewCamera = GetComponentInChildren<Camera>();
         }
 
         void OnEnable()

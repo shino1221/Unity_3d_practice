@@ -5,7 +5,7 @@ namespace MinePrototype
 {
     public class Backpack : Item
     {
-        [field: SerializeField, HideInInspector] public Item[] Items { get; private set; } = new Item[5];
+        [field: SerializeField, HideInInspector] public Item[] Items { get; private set; } = new Item[3];
         [field: SerializeField] public Transform Storage { get; private set; }
         private bool bound, restoreMouse, attemptedHold;
         private float heldSeconds;

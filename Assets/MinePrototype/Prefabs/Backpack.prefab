@@ -318,8 +318,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   <Storage>k__BackingField: {fileID: 4332735920819837561}
   dropAction: {fileID: -7663457519439987177, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   cancelAction: {fileID: -7164076610984245215, guid: 052faaac586de48259a63d0c4782560b, type: 3}

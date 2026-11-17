@@ -10,9 +10,9 @@ namespace MinePrototype
         [SerializeField] private Inventory inventory; // 플레이어 인벤토리
         [SerializeField] private Button backpackButton; // 배낭을 장착했을 때 표시하는 배낭 UI
         [SerializeField] private GameObject backpackPanel, holdHint; 
-        // backpackPanel: 배낭 5칸 UI, holdHint: 배낭을 들 때 표시할 던지기·취소 안내
-        [SerializeField] private Image[] frames = new Image[8], icons = new Image[8]; 
-        // frames: 슬롯 테두리, icons: 아이템 아이콘(0~2 소지 칸, 3~7 배낭 칸)
+        // backpackPanel: 배낭 3칸 UI, holdHint: 배낭을 들 때 표시할 던지기·취소 안내
+        [SerializeField] private Image[] frames = new Image[6], icons = new Image[6];
+        // frames: 슬롯 테두리, icons: 아이템 아이콘(0~2 소지 칸, 3~5 배낭 칸)
         [SerializeField] private Image dragBorder, dragIcon; 
         // dragBorder: 마우스를 따라가는 테두리, dragIcon: 드래그 아이템 아이콘
         [SerializeField] private Color normal = new(0.3f, 0.34f, 0.37f); // 테두리 기본색
@@ -40,14 +40,24 @@ namespace MinePrototype
 
         private void OnApplicationFocus(bool focused)
         {
-            if (!focused && source >= 0) EndDrag();
+            if (!focused) CancelDrag();
+        }
+
+        internal void CancelDrag()
+        {
+            if (source >= 0) EndDrag();
         }
 
         private void Update()
         {
             if (Player.Instance == null || !Player.Instance.CanManageInventory)
             {
-                if (source >= 0) EndDrag();
+                CancelDrag();
+                return;
+            }
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                inventory.ToggleOpen();
                 return;
             }
             if (!Input.GetKeyDown(KeyCode.LeftAlt) || inventory.HoldingBag || inventory.Dragging) return;
@@ -61,7 +71,7 @@ namespace MinePrototype
             backpackButton.interactable = !inventory.HoldingBag;
             backpackPanel.SetActive(inventory.IsOpen);
             holdHint.SetActive(inventory.HoldingBag);
-            for (int i = 0; i < frames.Length; i++) // i: 갱신할 슬롯 번호(0~2 소지 칸, 3~7 배낭 칸)
+            for (int i = 0; i < frames.Length; i++) // i: 갱신할 슬롯 번호(0~2 소지 칸, 3~5 배낭 칸)
             {
                 Item item = inventory.At(i); // 이 슬롯에 들어 있는 아이템, 빈 칸이면 null
                 icons[i].sprite = item == null ? null : item.Icon;

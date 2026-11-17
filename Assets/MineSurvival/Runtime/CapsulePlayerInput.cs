@@ -19,7 +19,9 @@ namespace MineSurvival
         // 화면 없는 자동 검사에서는 이 읽기만 대체합니다. 실제 게임은 항상 Unity 커서 상태를 확인합니다.
         Func<bool> readCursorLocked = () => Cursor.lockState == CursorLockMode.Locked;
         float timeScaleBeforeMenu = 1;
+        bool cursorRequested, cursorBeforeMenu; // 현재 요청된 커서 잠금 상태와 메뉴를 열기 직전의 상태
         int actionTransitionFrame = -1;
+        public event Action<bool> MenuChanged; // 메뉴 화면에 일시정지 상태를 알립니다.
         public bool InventoryOpen { get; private set; }
         public bool MenuOpen { get; private set; }
         public bool ActionInProgress { get; private set; }
@@ -45,7 +47,7 @@ namespace MineSurvival
         void OnApplicationFocus(bool focused)
         {
             hasFocus = focused;
-            if (!focused) SetCursorCaptured(false);
+            if (!focused) ApplyCursor(false);
         }
         void OnDisable()
         {
@@ -66,9 +68,10 @@ namespace MineSurvival
         {
             if (MenuOpen == open) return;
             MenuOpen = open;
-            if (open) { timeScaleBeforeMenu = Time.timeScale; Time.timeScale = 0; }
+            if (open) { cursorBeforeMenu = cursorRequested; timeScaleBeforeMenu = Time.timeScale; Time.timeScale = 0; }
             else Time.timeScale = timeScaleBeforeMenu;
-            ApplyInputLocks();
+            ApplyInputLocks(!open && cursorBeforeMenu);
+            MenuChanged?.Invoke(open);
         }
 
         // [구조/치료 담당 연결] 이동·시점·도구 사용을 잠급니다. Ctrl 앉기는 계속 허용합니다.
@@ -80,11 +83,11 @@ namespace MineSurvival
             ApplyInputLocks();
         }
 
-        void ApplyInputLocks()
+        void ApplyInputLocks(bool captureCursor = true)
         {
             movement.SetMovementEnabled(CanUseTools);
             if (look != null) look.SetLookEnabled(CanUseTools);
-            SetCursorCaptured(hasFocus && !InventoryOpen && !MenuOpen && !movement.Stamina.IsDead);
+            SetCursorCaptured(captureCursor);
         }
 
         // Unity가 매 프레임 호출합니다. 입력을 읽고 → 동작을 요청하고 → 실제 이동을 처리합니다.
@@ -130,7 +133,12 @@ namespace MineSurvival
         // 이 함수 자체는 커서만 관리합니다. UI 표시 여부는 각 UI 담당자가 처리합니다.
         public void SetCursorCaptured(bool captured)
         {
-            captured &= hasFocus && !InventoryOpen && !MenuOpen && !movement.Stamina.IsDead;
+            cursorRequested = captured && !InventoryOpen && !MenuOpen && !movement.Stamina.IsDead;
+            ApplyCursor(cursorRequested && hasFocus);
+        }
+
+        static void ApplyCursor(bool captured)
+        {
             Cursor.lockState = captured ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !captured;
         }
